@@ -15,9 +15,10 @@ export class UserService {
   }
 
   findByEmailOrThrow(email: string) {
+    
     return this.prismaClient.user.findUniqueOrThrow({
       where: {
-        email,
+        email: email,
       },
     });
   }
@@ -34,11 +35,25 @@ export class UserService {
     });
   }
 
-  prepareUserForDTO(user: User): UserResponse['user'] {
-    return removeFields(user, ['password']);
+  prepareUserForDTO(user: User): Omit<UserResponse['user'], 'id' > & {
+    id: string;
+  } {
+    const userWithoutPass = removeFields(user, ['password']);
+
+    return {
+      ...userWithoutPass,
+      id: String(user.id),
+    }
+      
+    
   }
 
   prepareForToken(user: User) {
-    return extractFields(user, ['id', 'role', 'email', 'name']);
+    const neededFields = extractFields(user, ['id', 'role', 'email', 'name']);
+    
+    return {
+      ...neededFields,
+      id: String(neededFields.id),
+    }
   }
 }

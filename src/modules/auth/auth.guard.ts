@@ -4,18 +4,27 @@ import { JwtService } from '@nestjs/jwt';
 import { IJWTPayload } from 'src/@types';
 import { DatabaseService } from '../database/database.service';
 import { removeFields } from 'src/utils/object.utils';
+import { Reflector } from '@nestjs/core';
+import { IsPublic } from 'src/decorators/auth.dec';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
 
   constructor(
     private jwtService: JwtService,
-    private databaseService: DatabaseService
+    private databaseService: DatabaseService,
+    private reflector: Reflector
   ) {}
 
   async canActivate(
     context: ExecutionContext,
   ): Promise<boolean> {
+    
+    const isPublic = this.reflector.get(IsPublic, context.getHandler());
+
+    if(isPublic) {
+      return true
+    };
     const request = context.switchToHttp().getRequest<Request>();
     const authHeader = request.headers.authorization;
     const jwt = authHeader?.split(' ')[1];
@@ -26,11 +35,14 @@ export class AuthGuard implements CanActivate {
       const payload = this.jwtService.verify<IJWTPayload>(jwt);
       const user = await this.databaseService.user.findUniqueOrThrow({
         where: {
-          id: payload.sub,
+          id: BigInt(payload.sub),
         },
       });
-
-      request.user = removeFields(user, ['password']);
+      const userWithoutPass = removeFields(user, ['password']);
+      request.user = {
+        ...userWithoutPass,
+        id: String(userWithoutPass.id),
+      }
 
       return true;
 
