@@ -8,12 +8,15 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthGuard } from './modules/auth/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 
+
 @Module({
   imports: [
     AuthModule, 
     UserModule, 
     DatabaseModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
   ],
   controllers: [AppController],
   providers: [
