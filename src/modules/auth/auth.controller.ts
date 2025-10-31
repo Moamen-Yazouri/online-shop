@@ -3,14 +3,17 @@ import { AuthService } from './auth.service';
 import type {Request} from 'express';
 import type { LoginDTO, RegisterDTO } from './dto/auth.dto';
 import { IsPublic } from 'src/decorators/auth.dec';
+import { registerSchema } from './validation/auth.validationSchema';
+import { ZodValidationPipe } from 'src/pipes/zodValidation.pipe';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  
   @Post('register')
   @IsPublic()
-  create(@Body() registerDTO: RegisterDTO) {
+  create(@Body(new ZodValidationPipe(registerSchema)) registerDTO: RegisterDTO) {
     return this.authService.register(registerDTO);
   }
 

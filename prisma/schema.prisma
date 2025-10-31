@@ -46,6 +46,7 @@ model User {
   password String    @db.Text
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  isDeleted Boolean  @default(false) @map("is_deleted")
   orders    Order[]
   products  Product[]     @relation("MerchantProducts") // if a user can be a merchant
   txns      User_Transaction[]
