@@ -4,7 +4,7 @@ import { RegisterDTO, UserResponse } from '../auth/dto/auth.dto';
 import { extractFields, removeFields } from 'src/utils/object.utils';
 import { User } from 'generated/prisma/client';
 import { IPaginationQuery, IPaginationResult } from 'src/@types';
-import { serializeUser, serializeUsers } from './utils/users.serialize';
+import { serializeMany, serializeOne} from '../../utils/serialize.util';
 import { UpdateUserDTO } from './dto/user.dto';
 
 @Injectable()
@@ -43,7 +43,7 @@ export class UserService {
       const total = await prisma.user.count();
 
       return {
-        data: serializeUsers(users),
+        data: serializeMany(users),
         meta: {
           total,
           page: query.page,
@@ -75,7 +75,7 @@ export class UserService {
       data,
     });
 
-    return serializeUser(updatedUser);
+    return serializeOne(updatedUser);
   }
 
   async delete(id: bigint) {
@@ -84,14 +84,14 @@ export class UserService {
         id,
       },
       data: {
-        isDeleted: true,
+        isDeleted: true
       },
       omit: {
         password: true,
       }
     });
 
-    return serializeUser(deletedUser);
+    return serializeOne(deletedUser);
   }
   prepareUserForDTO(user: User): Omit<UserResponse['user'], 'id' > & {
     id: string;
