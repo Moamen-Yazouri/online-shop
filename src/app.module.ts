@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthGuard } from './modules/auth/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './modules/auth/roles.guard';
+import { ProductModule } from './modules/product/product.module';
 
 
 @Module({
@@ -18,6 +19,7 @@ import { RolesGuard } from './modules/auth/roles.guard';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [

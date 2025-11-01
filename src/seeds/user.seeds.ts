@@ -1,5 +1,6 @@
 import { RegisterDTO } from "src/modules/auth/dto/auth.dto"
 import { faker } from "@faker-js/faker"
+
 export const generateUserForSeed = () => {
     const userForSeed: RegisterDTO = {
         email: faker.internet.email(),
@@ -9,3 +10,7 @@ export const generateUserForSeed = () => {
     }
     return userForSeed;
 }
+
+
+
+
