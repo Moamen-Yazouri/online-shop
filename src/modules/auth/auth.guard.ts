@@ -47,9 +47,7 @@ export class AuthGuard implements CanActivate {
       return true;
 
     } catch  {
-
       throw new ForbiddenException('You do not have permission to access this resource');
-      
     }
     
   }

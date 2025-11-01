@@ -7,6 +7,8 @@ import { DatabaseModule } from './modules/database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthGuard } from './modules/auth/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './modules/auth/roles.guard';
+import { ProductModule } from './modules/product/product.module';
 
 
 @Module({
@@ -17,6 +19,7 @@ import { APP_GUARD } from '@nestjs/core';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [
@@ -24,6 +27,10 @@ import { APP_GUARD } from '@nestjs/core';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     }
   ],
 })

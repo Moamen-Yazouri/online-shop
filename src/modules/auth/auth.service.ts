@@ -41,7 +41,11 @@ export class AuthService {
       const foundedUser = await this.userService.findByEmailOrThrow(
         email,
       );
- 
+      
+      if(foundedUser.isDeleted) {
+        throw new UnauthorizedException('User is deleted');
+      }
+      
       const isPasswordValid = await this.verifyPassword(
         foundedUser.password,
         loginInfo.password,
