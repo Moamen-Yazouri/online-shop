@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ProductService } from './product.service';
 import type { CreateProductDTO, UpdateProductDTO } from './dto/product.dto';
 import type { IProductPaginationQuery } from './types';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 
 @Controller('product')
@@ -9,8 +10,14 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
-  create(@Body() createProductDto: CreateProductDTO) {
-    return this.productService.create(createProductDto);
+  @UseInterceptors(FileInterceptor('image' ),
+  )
+  create(
+    @Body() createProductDto: CreateProductDTO,
+    @UploadedFile() image: Express.Multer.File,
+  ) {
+      console.log(image);
+      return "Uploaded successfully"
   }
 
   @Get()

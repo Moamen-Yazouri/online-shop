@@ -3,6 +3,7 @@ import { UserResponse } from "src/modules/auth/dto/auth.dto";
 
 export interface EnvVars {
     JWT_SECRET: string
+    IMAGEKIT_PRIVATE_KEY: string
 }
 
 export interface IJWTPayload {

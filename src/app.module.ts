@@ -9,6 +9,7 @@ import { AuthGuard } from './modules/auth/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './modules/auth/roles.guard';
 import { ProductModule } from './modules/product/product.module';
+import { FileModule } from './modules/file/file.module';
 
 
 @Module({
@@ -20,6 +21,7 @@ import { ProductModule } from './modules/product/product.module';
       isGlobal: true,
     }),
     ProductModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [

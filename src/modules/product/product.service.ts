@@ -10,6 +10,8 @@ import { Prisma, Product } from 'generated/prisma';
 @Injectable()
 export class ProductService {
   constructor(private prismaClient: DatabaseService) {}
+
+  
   create(createProductDto: CreateProductDTO) {
     return this.prismaClient.product.create({
       data: createProductDto,
