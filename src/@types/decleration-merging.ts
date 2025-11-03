@@ -1,10 +1,14 @@
 import { UserResponse } from "src/modules/auth/dto/auth.dto";
 import { EnvVars } from ".";
+import ImageKit from "@imagekit/nodejs";
 
 declare global {
     namespace Express {
         interface Request {
             user?: UserResponse['user'],
+        }
+        namespace Multer {
+            interface File extends ImageKit.Files.FileUploadResponse {}
         }
     }
 

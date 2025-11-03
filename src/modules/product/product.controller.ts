@@ -1,20 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import type { CreateProductDTO, UpdateProductDTO } from './dto/product.dto';
+import type { IProductPaginationQuery } from './types';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  @UseInterceptors(FileInterceptor('image' ),
+  )
+  create(
+    @Body() createProductDto: CreateProductDTO,
+    @UploadedFile() image: Express.Multer.File,
+  ) {
+      console.log(image);
+      return "Uploaded successfully"
   }
 
   @Get()
-  findAll() {
-    return this.productService.findAll();
+  findAll(@Query() query: IProductPaginationQuery) {
+    return this.productService.findAll(query);
   }
 
   @Get(':id')
@@ -23,7 +31,7 @@ export class ProductController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDTO) {
     return this.productService.update(+id, updateProductDto);
   }
 
