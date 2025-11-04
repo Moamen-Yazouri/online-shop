@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import type { CreateProductDTO, UpdateProductDTO } from './dto/product.dto';
+import type { Request } from 'express';
 import { DatabaseService } from '../database/database.service';
 import { IPaginationResult } from 'src/@types';
 import { IProductPaginationQuery } from './types';
 import { Prisma, Product } from 'generated/prisma';
+import { serializeOne } from 'src/utils/serialize.util';
 
 
 
@@ -12,10 +14,26 @@ export class ProductService {
   constructor(private prismaClient: DatabaseService) {}
 
   
-  create(createProductDto: CreateProductDTO) {
-    return this.prismaClient.product.create({
-      data: createProductDto,
-    });
+  async create(
+    req: Request,
+    newProduct: CreateProductDTO,
+    file: Express.Multer.File
+  ) {
+    const createdProduct = await this.prismaClient.product.create({
+      data: {
+        ...newProduct,
+        merchantId: BigInt(req.user!.id),
+        images: {
+          create: {
+            fileId: file.fileId!,
+            fileSizeInKB: Math.ceil(file.size),
+            url: file.url!,
+            fileType: file.mimetype,
+          }
+        }
+      }
+    })
+    return serializeOne(createdProduct);
   }
 
   findAll(query: IProductPaginationQuery): Promise<IPaginationResult<Product>> {
