@@ -3,6 +3,7 @@ import { ProductService } from './product.service';
 import type { CreateProductDTO, UpdateProductDTO } from './dto/product.dto';
 import type { IProductPaginationQuery } from './types';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { FolderInterceptor } from 'src/interceptors/folder.interceptor';
 
 
 @Controller('product')
@@ -10,7 +11,9 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('image' ),
+  @UseInterceptors(
+    FolderInterceptor("products"),
+    FileInterceptor('image' ),
   )
   create(
     @Body() createProductDto: CreateProductDTO,
