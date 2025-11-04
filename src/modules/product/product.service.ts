@@ -6,32 +6,35 @@ import { IPaginationResult } from 'src/@types';
 import { IProductPaginationQuery } from './types';
 import { Prisma, Product } from 'generated/prisma';
 import { serializeOne } from 'src/utils/serialize.util';
+import { FileService } from '../file/file.service';
 
 
 
 @Injectable()
 export class ProductService {
-  constructor(private prismaClient: DatabaseService) {}
+  constructor(
+    private prismaClient: DatabaseService,
+    private fileService: FileService,
+  ) {}
 
   
   async create(
     req: Request,
     newProduct: CreateProductDTO,
-    file: Express.Multer.File
+    file?: Express.Multer.File
   ) {
+    const payloadData: Prisma.ProductUncheckedCreateInput = {
+      ...newProduct, 
+      merchantId: BigInt(req.user!.id)
+    }
+
+    if(file) {
+      payloadData.assets = {
+        create: this.fileService.createFileAssetData(file)
+      }; 
+    }
     const createdProduct = await this.prismaClient.product.create({
-      data: {
-        ...newProduct,
-        merchantId: BigInt(req.user!.id),
-        images: {
-          create: {
-            fileId: file.fileId!,
-            fileSizeInKB: Math.ceil(file.size),
-            url: file.url!,
-            fileType: file.mimetype,
-          }
-        }
-      }
+      data: payloadData,
     })
     return serializeOne(createdProduct);
   }

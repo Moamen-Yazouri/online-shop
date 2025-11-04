@@ -23,7 +23,7 @@ export class ProductController {
   create(
     @Req() req: Request,
     @Body(new ZodValidationPipe(productValidationSchema)) createProductDto: CreateProductDTO,
-    @UploadedFile() image: Express.Multer.File,
+    @UploadedFile() image?: Express.Multer.File,
   ) {
      return this.productService.create(req, createProductDto, image);
   }
