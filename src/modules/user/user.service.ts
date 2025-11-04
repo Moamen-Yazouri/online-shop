@@ -56,12 +56,17 @@ export class UserService {
 
   }
 
-  findById(id: bigint) {
-    return this.prismaClient.user.findUnique({
+  async findById(id: bigint) {
+    const foundedUser = await this.prismaClient.user.findUniqueOrThrow({
       where: {
         id,
       },
+      omit: {
+        password: true
+      }
     });
+
+    return serializeOne(foundedUser);
   }
 
   async update(id: bigint, data: UpdateUserDTO) {
