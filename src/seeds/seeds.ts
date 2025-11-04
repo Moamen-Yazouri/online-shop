@@ -15,7 +15,7 @@ const main = async () => {
         email: 'moamen@email.com',
         name: 'moamen',
         password: pass,
-        role: "MERCHANT"
+        role: "ADMIN"
     };
 
     const usersForSeed = [...faker.helpers.multiple(generateUserForSeed, {count: 10}), merchantForSeed];

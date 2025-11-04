@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { imageKitToken } from './image.provider';
 import ImageKit, { toFile } from '@imagekit/nodejs';
 import { StorageEngine } from 'multer';
+import { Prisma } from 'generated/prisma';
 
 @Injectable()
 export class FileService {
@@ -42,5 +43,14 @@ export class FileService {
 
         } 
         return customStorage;
+    }
+
+    createFileAssetData(file: Express.Multer.File): Prisma.AssetUncheckedCreateInput {
+        return {
+            fileId: file.fileId!,
+            fileSizeInKB: Math.ceil(file.size),
+            url: file.url!,
+            fileType: file.mimetype, 
+        }
     }
 }
