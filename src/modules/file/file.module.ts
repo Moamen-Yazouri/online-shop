@@ -7,7 +7,7 @@ import { ImageKitProvider } from './image.provider';
 @Module({
   imports: [
     MulterModule.registerAsync({
-      // This factory is async and need to import the FileModule to user the service
+      // This factory is async and need to import the FileModule to use the service injected
       imports: [FileModule],
       useFactory: (fileService: FileService) => {
 

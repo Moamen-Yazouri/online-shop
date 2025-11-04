@@ -12,6 +12,7 @@ export class FileService {
         const customStorage: StorageEngine = {
             
             _handleFile: (req, file, cb) => {
+
                 toFile(file.stream)
                 .then((fileData) => ( 
                     this.imageKit.files.
@@ -19,7 +20,7 @@ export class FileService {
                         file: fileData,
                         fileName: file.originalname,
                         useUniqueFileName: true,
-                        folder: 'products',
+                        folder: req.folder ? req.folder : "products",
                     })
                     .then((uploadedFile) => {
                         cb(null, uploadedFile);

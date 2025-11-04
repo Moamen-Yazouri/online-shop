@@ -38,6 +38,10 @@ enum TxType {
   CREDIT  // money to the user (refund/top-up)
 }
 
+enum StorageProviderName {
+  IMAGE_KIT
+}
+
 model User {
   id        BigInt   @id @default(autoincrement())
   name      String
@@ -61,12 +65,31 @@ model Product {
   price       Decimal   @db.Decimal(12,2) // current list price
   merchantId  BigInt?   @map("merchant_id")
 
-  
+  image       Asset[]  
   merchant    User?     @relation("MerchantProducts", fields: [merchantId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   orderItems  Order_Product[]
   returnItems Return_Item[]
 
   @@index([merchantId])
+}
+
+
+model Asset {
+  id                   BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  storageProviderName  StorageProviderName    @default(IMAGE_KIT) @map("storage_provider_name")
+  fileId               String                 @db.VarChar(255)
+  url                  String                 @db.VarChar(255)
+  fileType             String                 @db.VarChar(255)
+  fileSizeInKB         Int                    @db.UnsignedInt
+  ownerId              BigInt                 @map("owner_id")   @db.UnsignedBigInt
+  createdAt            DateTime               @default(now())    @map("created_at")
+  deletedAt            DateTime?              @map("deleted_at")
+  productId            BigInt?                @map("product_id") @db.UnsignedBigInt
+
+  // Relations
+  product  Product?                           @relation(fields: [productId], references: [id])
+
+  @@map("assets")
 }
 
 model Order {
@@ -143,4 +166,8 @@ model User_Transaction {
   @@index([orderReturnId])
   @@index([type])
 }
+
+
+
+
 

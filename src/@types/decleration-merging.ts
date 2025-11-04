@@ -6,6 +6,7 @@ declare global {
     namespace Express {
         interface Request {
             user?: UserResponse['user'],
+            folder?: string
         }
         namespace Multer {
             interface File extends ImageKit.Files.FileUploadResponse {}
