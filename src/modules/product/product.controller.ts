@@ -37,8 +37,8 @@ export class ProductController {
 
   @Roles(['MERCHANT', 'CUSTOMER', 'ADMIN'])
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
+  findOne(@Param('id') id: bigint) {
+    return this.productService.findOne(id);
   }
 
   @UseInterceptors(
@@ -56,7 +56,10 @@ export class ProductController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productService.remove(+id);
+  remove(
+    @Req() req: Request,
+    @Param('id') id: bigint
+  ) {
+    return this.productService.remove(id, BigInt(req.user!.id));
   }
 }
