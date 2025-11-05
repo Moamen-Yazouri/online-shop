@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
-import { IPaginationQuery, IPaginationResult } from 'src/@types';
+import { IMetaPagination, IPaginationQuery } from 'src/@types';
 
 @Injectable()
 export class DatabaseService extends PrismaClient implements OnModuleInit {
@@ -18,7 +18,7 @@ export class DatabaseService extends PrismaClient implements OnModuleInit {
     }
   }
 
-  handleMetaWithPagination<T>(limit: number, page: number, total: number,): IPaginationResult<T>["meta"] {
+  handleMetaWithPagination(limit: number, page: number, total: number): IMetaPagination {
     return {
       total,
       page,

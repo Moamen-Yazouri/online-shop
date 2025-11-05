@@ -62,9 +62,9 @@ model Product {
   id          BigInt   @id @default(autoincrement())
   name        String
   description String?
-  price       Decimal   @db.Decimal(12,2) // current list price
+  price       Decimal   @db.Decimal(12,2) 
   merchantId  BigInt?   @map("merchant_id")
-
+  isDeleted Boolean  @default(false) @map("is_deleted")
   assets       Asset[]  
   merchant    User?     @relation("MerchantProducts", fields: [merchantId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   orderItems  Order_Product[]

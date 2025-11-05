@@ -4,7 +4,6 @@ import { RegisterDTO, UserResponse } from '../auth/dto/auth.dto';
 import { extractFields, removeFields } from 'src/utils/object.utils';
 import { User } from 'generated/prisma/client';
 import { IPaginationQuery, IPaginationResult } from 'src/@types';
-import { serializeOne} from '../../utils/serialize.util';
 import { UpdateUserDTO, UserResponseDTO } from './dto/user.dto';
 
 @Injectable()
@@ -61,7 +60,7 @@ export class UserService {
       }
     });
 
-    return serializeOne(foundedUser);
+    return foundedUser;
   }
 
   async update(id: bigint, data: UpdateUserDTO) {
@@ -75,7 +74,7 @@ export class UserService {
       data,
     });
 
-    return serializeOne(updatedUser);
+    return updatedUser;
   }
 
   async delete(id: bigint) {
@@ -91,7 +90,7 @@ export class UserService {
       }
     });
 
-    return serializeOne(deletedUser);
+    return deletedUser;
   }
   prepareUserForDTO(user: User): Omit<UserResponse['user'], 'id' > & {
     id: string;

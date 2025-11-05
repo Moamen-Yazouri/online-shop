@@ -61,9 +61,6 @@ export class ProductService {
 
       const products =  await prisma.product.findMany({
         where: whereClause,
-        include: {
-          assets: true,
-        },
         ...pagination
       });
 
@@ -80,8 +77,11 @@ export class ProductService {
     return productsForRes;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  findOne(id: bigint) {
+    return this.prismaClient.product.findUnique({
+      where: {id},
+      include: {assets: true},
+    });
   }
 
   async update(
@@ -125,7 +125,12 @@ export class ProductService {
     return updatePayload;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  remove(id: bigint, userId: bigint) {
+    return this.prismaClient.product.update({
+      data: {isDeleted: true, merchantId: userId},
+      where: {
+        id
+      }
+    });
   }
 }
