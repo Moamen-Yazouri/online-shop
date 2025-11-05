@@ -8,7 +8,7 @@ import { FolderInterceptor } from 'src/interceptors/folder.interceptor';
 import { ZodValidationPipe } from 'src/pipes/zodValidation.pipe';
 import { productValidationSchema, updateProductValidationSchema } from './validation/product.validationSchema';
 import { Roles } from 'src/decorators/roles.dec';
-import { ProductQuerySchema } from './validation/query.validationSchem';
+import { productQuerySchema } from './validation/query.validationSchem';
 
 
 @Controller('product')
@@ -31,10 +31,7 @@ export class ProductController {
 
   @Roles(['MERCHANT', 'CUSTOMER', 'ADMIN'])
   @Get()
-  findAll(@Query(new ZodValidationPipe(ProductQuerySchema)) query: IProductPaginationQuery = {
-    limit: 50,
-    page: 1,
-  }) {
+  findAll(@Query(new ZodValidationPipe(productQuerySchema)) query: IProductPaginationQuery) {
     return this.productService.findAll(query);
   }
 
