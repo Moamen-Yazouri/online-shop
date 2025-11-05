@@ -56,26 +56,25 @@ export class ProductService {
           }
         }
         : {}
+        console.log(query)
+      const pagination = this.prismaClient.handlePagination(query);
 
-      
       const products =  await prisma.product.findMany({
-        skip: (query.page - 1) * query.limit,
-        take: query.limit,
         where: whereClause,
         include: {
           assets: true,
-        }
+        },
+        ...pagination
       });
 
       const total = await prisma.product.count();
+
       const serilaizedProducts = serializeMany(products);
+
+      const meta = this.prismaClient.handleMetaWithPagination(query.limit, query.page, total);
       return {
         data: serilaizedProducts,
-        meta: {
-          total,
-          page: query.page,
-          limit: query.limit,
-        }
+        meta,
       }
     });
     return productsForRes;
