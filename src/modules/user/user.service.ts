@@ -4,8 +4,8 @@ import { RegisterDTO, UserResponse } from '../auth/dto/auth.dto';
 import { extractFields, removeFields } from 'src/utils/object.utils';
 import { User } from 'generated/prisma/client';
 import { IPaginationQuery, IPaginationResult } from 'src/@types';
-import { serializeMany, serializeOne} from '../../utils/serialize.util';
-import { UpdateUserDTO } from './dto/user.dto';
+import { serializeOne} from '../../utils/serialize.util';
+import { UpdateUserDTO, UserResponseDTO } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -28,27 +28,22 @@ export class UserService {
 
   findAll(
     query: IPaginationQuery
-  ): Promise<IPaginationResult<UserResponse['user']>> {
+  ): Promise<IPaginationResult<UserResponseDTO>> {
 
     const usersForRes = this.prismaClient.$transaction(async (prisma) => {
-
+      const pagination = this.prismaClient.handlePagination(query);
       const users = (await prisma.user.findMany({
         omit: {
           password: true
         },
-        skip: (query.page - 1) * query.limit,
-        take: query.limit,
+        ...pagination
       }));
 
       const total = await prisma.user.count();
-
+      const meta = this.prismaClient.handleMetaWithPagination(query.limit, query.page, total)
       return {
-        data: serializeMany(users),
-        meta: {
-          total,
-          page: query.page,
-          limit: query.limit,
-        }
+        data: users,
+        meta,
       }
     });
 
