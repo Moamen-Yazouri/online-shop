@@ -4,7 +4,8 @@ import type { IPaginationQuery } from 'src/@types';
 import type { UpdateUserDTO } from './dto/user.dto';
 import { ZodValidationPipe } from 'src/pipes/zodValidation.pipe';
 import { updateUserValidationSchema } from './validation/user.validationSchema';
-import { PaginationSchema } from './validation/queryValidationSchema';
+import { querySchema } from 'src/utils/validation/query.validation';
+
 
 
 @Controller('user')
@@ -12,7 +13,7 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Get()
-  findAll(@Query(new ZodValidationPipe(PaginationSchema)) query: IPaginationQuery) {
+  findAll(@Query(new ZodValidationPipe(querySchema)) query: IPaginationQuery) {
 
     return this.userService.findAll(query);
 
