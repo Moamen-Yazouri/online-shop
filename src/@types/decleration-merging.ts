@@ -17,4 +17,7 @@ declare global {
         interface ProcessEnv extends EnvVars{}
     }
 
+    interface BigInt {
+        toJSON(): string;
+    }
 }

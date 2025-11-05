@@ -1,4 +1,4 @@
-import { User } from "generated/prisma";
+import { Prisma, User } from "generated/prisma";
 import { UserResponse } from "src/modules/auth/dto/auth.dto";
 
 export interface EnvVars {
@@ -27,3 +27,5 @@ export interface IPaginationResult<T> {
     data: T[];
     meta: IMetaPagination;
 }
+
+export type PrismaClientTX = Prisma.TransactionClient;

@@ -3,6 +3,8 @@ import { imageKitToken } from './image.provider';
 import ImageKit, { toFile } from '@imagekit/nodejs';
 import { StorageEngine } from 'multer';
 import { Prisma } from 'generated/prisma';
+import { PrismaClientTX } from 'src/@types';
+import { SideEffectsQueue } from 'src/utils/side-effects/sideEffects.utils';
 
 @Injectable()
 export class FileService {
@@ -52,5 +54,34 @@ export class FileService {
             url: file.url!,
             fileType: file.mimetype, 
         }
+    }
+
+    async deleteFileAsset(
+        tx: PrismaClientTX,
+        productId: bigint,
+        sideEffect: SideEffectsQueue,
+    ) {
+        const whereClause = {
+            where: {
+                productId: productId,
+            }
+        }
+
+        const assets = await tx.asset.findMany(whereClause);
+        
+        if(assets.length == 0) {
+            return;
+        };
+        
+        await tx.asset.deleteMany(whereClause);
+
+        assets.forEach(element => {
+            sideEffect.insertOne({
+                label: `Delete the asset with id: ${element.fileId}`,
+                effect: async () => {
+                    await this.imageKit.files.delete(element.fileId);
+                }
+            })
+        })
     }
 }
