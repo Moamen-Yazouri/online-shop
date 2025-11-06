@@ -10,6 +10,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './modules/auth/roles.guard';
 import { ProductModule } from './modules/product/product.module';
 import { FileModule } from './modules/file/file.module';
+import { OrderModule } from './modules/order/order.module';
 
 
 @Module({
@@ -22,6 +23,7 @@ import { FileModule } from './modules/file/file.module';
     }),
     ProductModule,
     FileModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [
