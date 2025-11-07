@@ -1,20 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import type { IPaginationQuery, IPaginationResult } from 'src/@types';
+import type { Request } from 'express';
+import type { CreateOrderDTO, OrderOverviewDTO } from './dto/order.dto';
 
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  create(
+    @Req() req: Request,
+    @Body() createOrderDto: CreateOrderDTO
+  ) {
+    return this.orderService.create(createOrderDto, BigInt(req.user!.id));
   }
 
   @Get()
-  findAll() {
-    return this.orderService.findAll();
+  findAll(
+    @Req() req: Request,
+    @Query() query: IPaginationQuery
+  ): Promise<IPaginationResult<OrderOverviewDTO>> {
+    return this.orderService.findAll(query, BigInt(req.user!.id));
   }
 
   @Get(':id')

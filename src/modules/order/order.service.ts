@@ -1,16 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { CreateOrderDTO, OrderResponseDTO } from './dto/order.dto';
+import { CreateOrderDTO, OrderOverviewDTO, OrderResponseDTO } from './dto/order.dto';
 import { DatabaseService } from '../database/database.service';
 import { generatePriceById, generatePriceWithQty } from './utils/builder.utils';
 import { calcTheTotalAmount } from './utils/money.util';
+import { IPaginationQuery, IPaginationResult } from 'src/@types';
 
 @Injectable()
 export class OrderService {
   constructor(private readonly prismaClient: DatabaseService) {}
   async create(createOrderDto: CreateOrderDTO, userId: bigint): Promise<OrderResponseDTO> {
 
-    const prodIds = createOrderDto.map((item) => item.productId);
+    const prodIds = createOrderDto.map((item) => BigInt(item.productId));
 
     const foundedProds = await this.prismaClient.product.findMany({
       where: {
@@ -27,7 +28,7 @@ export class OrderService {
     const priceWithId = generatePriceById(foundedProds);
 
     const priceAndQty = generatePriceWithQty(createOrderDto, priceWithId);
-
+    console.log(priceAndQty);
     const totalAmount = calcTheTotalAmount(priceAndQty);
 
     const orderProducts = createOrderDto.map((item) => ({
@@ -70,8 +71,34 @@ export class OrderService {
     return createorder;
   }
 
-  findAll() {
-    return `This action returns all order`;
+  async findAll(query: IPaginationQuery, userId: bigint): Promise<IPaginationResult<OrderOverviewDTO>> {
+    const allOrders = await this.prismaClient.$transaction(async(prisma) => {
+      
+      const pagination = this.prismaClient.handlePagination(query);
+
+      const orders = await prisma.order.findMany({
+        where: {
+          userId,
+        },
+        include: {
+          items: true,
+          txns: true,
+          returns: true,
+        },
+        ...pagination
+      });
+
+      const total = await prisma.order.count();
+
+      const paginationMeta = this.prismaClient.handleMetaWithPagination(query.limit, query.page, total);
+
+      return {
+        data: orders,
+        meta: paginationMeta,
+      }
+    });
+
+    return allOrders;
   }
 
   findOne(id: number) {

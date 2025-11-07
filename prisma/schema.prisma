@@ -60,7 +60,7 @@ model Product {
   description String?
   price       Decimal   @db.Decimal(12,2) 
   merchantId  BigInt?   @map("merchant_id")
-  isDeleted Boolean  @default(false) @map("is_deleted")
+  isDeleted Boolean     @default(false) @map("is_deleted")
   assets       Asset[]  
   merchant    User?     @relation("MerchantProducts", fields: [merchantId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   orderItems  OrderProduct[]

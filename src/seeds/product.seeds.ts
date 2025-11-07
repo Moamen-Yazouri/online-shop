@@ -7,6 +7,7 @@ export const generateProductForSeed = (merchantId: bigint) => {
         | "createdAt" 
         | "updatedAt" 
         | "price"
+        | "isDeleted"
     > & {
         price: number;
     } = {

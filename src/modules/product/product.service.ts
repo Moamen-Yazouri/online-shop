@@ -5,7 +5,6 @@ import { DatabaseService } from '../database/database.service';
 import { IPaginationResult } from 'src/@types';
 import { IProductPaginationQuery } from './types';
 import { Prisma, Product } from 'generated/prisma';
-import { serializeMany, serializeOne } from 'src/utils/serialize.util';
 import { FileService } from '../file/file.service';
 import { SideEffectsQueue } from 'src/utils/side-effects/sideEffects.utils';
 
@@ -41,7 +40,7 @@ export class ProductService {
         assets: true,
       }
     })
-    return serializeOne(createdProduct);
+    return createdProduct;
 
   }
 
@@ -66,11 +65,10 @@ export class ProductService {
 
       const total = await prisma.product.count();
 
-      const serilaizedProducts = serializeMany(products);
 
       const meta = this.prismaClient.handleMetaWithPagination(query.limit, query.page, total);
       return {
-        data: serilaizedProducts,
+        data: products,
         meta,
       }
     });

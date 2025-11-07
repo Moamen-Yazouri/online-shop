@@ -20,3 +20,9 @@ export type OrderResponseDTO = Prisma.OrderGetPayload<{
         };
 }}>;
 
+export type OrderOverviewDTO = Prisma.OrderGetPayload<{
+    include: {
+        items: true,
+        txns: true,
+        returns: true,
+}}>;
