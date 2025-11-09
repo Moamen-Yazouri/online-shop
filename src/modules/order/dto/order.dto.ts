@@ -26,3 +26,8 @@ export type OrderOverviewDTO = Prisma.OrderGetPayload<{
         txns: true,
         returns: true,
 }}>;
+
+export type OrderReturnDTO = {
+    orderId: number;
+    products: CreateOrderDTO
+}

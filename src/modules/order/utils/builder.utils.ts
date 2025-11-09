@@ -1,5 +1,5 @@
 import { Prisma, Product } from "generated/prisma";
-import { CreateOrderDTO } from "../dto/order.dto";
+import { CreateOrderDTO, OrderReturnDTO } from "../dto/order.dto";
 
 export const generatePriceById = (prods: Product[]) => {
       const priceWithId: Map<bigint, Prisma.Decimal> = new Map();
@@ -15,4 +15,12 @@ export const generatePriceWithQty = (createOrderDto: CreateOrderDTO, priceWithId
       quantity: item.quantity,
     }));
 
-  }
+}
+
+export const generateIdWithQty = (returnedtems: OrderReturnDTO): Map<bigint, number> => {
+  const idWithQty: Map<bigint, number> = new Map();
+  returnedtems.products.forEach((item) => {
+    idWithQty.set(BigInt(item.productId), item.quantity);
+  });
+  return idWithQty;
+}
