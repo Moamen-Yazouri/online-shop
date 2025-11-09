@@ -1,18 +1,25 @@
-import { Controller, Get, Post, Body, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, HttpStatus, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import type {Request} from 'express';
 import type { LoginDTO, RegisterDTO } from './dto/auth.dto';
+import { IsPublic } from 'src/decorators/auth.dec';
+import { registerSchema } from './validation/auth.validationSchema';
+import { ZodValidationPipe } from 'src/pipes/zodValidation.pipe';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  
   @Post('register')
-  create(@Body() registerDTO: RegisterDTO) {
+  @IsPublic()
+  create(@Body(new ZodValidationPipe(registerSchema)) registerDTO: RegisterDTO) {
     return this.authService.register(registerDTO);
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @IsPublic()
   login(@Body() loginDTO: LoginDTO) {
     return this.authService.login(loginDTO);
   }

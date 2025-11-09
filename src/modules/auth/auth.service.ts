@@ -1,18 +1,17 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable, UnauthorizedException, Logger } from "@nestjs/common";
 import * as argon from "argon2";
 import { LoginDTO, RegisterDTO, UserResponse } from "./dto/auth.dto";
-import { User } from "generated/prisma/client";
 import { UserService } from "../user/user.service";
 import { JwtService } from "@nestjs/jwt";
-import { ConfigService } from "@nestjs/config";
-import { EnvVars, IJWTPayload } from "src/@types";
+import { IJWTPayload } from "src/@types";
+import { PrismaClientKnownRequestError } from "generated/prisma/runtime/library";
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService<EnvVars>,
   ) {}
 
   async register(registerDTO: RegisterDTO): Promise<UserResponse> {
@@ -23,10 +22,10 @@ export class AuthService {
       ...registerDTO,
       password: hashedPass,
     });
-    //generate token
+    
     const userForToken = this.userService.prepareForToken(newUser);
     const token = this.generateToken(userForToken);
-    //return user with token
+    
     const userForDTO = this.userService.prepareUserForDTO(newUser);
     return {
       token,
@@ -35,29 +34,48 @@ export class AuthService {
   }
 
   async login(loginInfo: LoginDTO) {
-    const foundedUser = await this.userService.findByEmailOrThrow(
-      loginInfo.email,
-    );
 
-    const isPasswordValid = await this.verifyPassword(
-      foundedUser.password,
-      loginInfo.password,
-    );
+    const {email } = loginInfo;
 
-    if (!isPasswordValid) {
-      throw new UnauthorizedException("Invalid credentials");
+    try {
+      const foundedUser = await this.userService.findByEmailOrThrow(
+        email,
+      );
+      
+      if(foundedUser.isDeleted) {
+        throw new UnauthorizedException('User is deleted');
+      }
+      
+      const isPasswordValid = await this.verifyPassword(
+        foundedUser.password,
+        loginInfo.password,
+      );
+  
+      if (!isPasswordValid) {
+        throw new UnauthorizedException("Invalid credentials");
+      }
+  
+      const userForToken = this.userService.prepareForToken(foundedUser);
+  
+      const token = this.generateToken(userForToken);
+
+      const userForDTO = this.userService.prepareUserForDTO(foundedUser);
+  
+      return {
+        token,
+        user: userForDTO,
+      };
     }
+    catch(err: unknown){
+      if (err instanceof PrismaClientKnownRequestError) {
 
-    const userForToken = this.userService.prepareForToken(foundedUser);
+        throw new UnauthorizedException('User not found');
+      }
+      
+      this.logger.error('Login failed', err instanceof Error ? err.stack : String(err));
 
-    const token = this.generateToken(userForToken);
-
-    const userForDTO = this.userService.prepareUserForDTO(foundedUser);
-
-    return {
-      token,
-      user: userForDTO,
-    };
+      throw new UnauthorizedException('Invalid credentials');
+    }
   }
 
   validate(user: UserResponse['user']): UserResponse {
@@ -84,7 +102,7 @@ export class AuthService {
   }
 
   private generateToken(
-    userForToken: Pick<User, "id" | "role" | "email" | "name">,
+    userForToken: Pick<UserResponse["user"], "id" | "role" | "email" | "name"> ,
   ) {
     const token = this.jwtService.sign<IJWTPayload>({
       sub: userForToken.id,

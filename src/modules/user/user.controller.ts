@@ -1,34 +1,39 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch,  Query } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import type { IPaginationQuery } from 'src/@types';
+import type { UpdateUserDTO } from './dto/user.dto';
+import { ZodValidationPipe } from 'src/pipes/zodValidation.pipe';
+import { updateUserValidationSchema } from './validation/user.validationSchema';
+import { querySchema } from 'src/utils/validation/query.validation';
+
+
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
-
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
-  }
+  constructor(private userService: UserService) {}
 
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  findAll(@Query(new ZodValidationPipe(querySchema)) query: IPaginationQuery) {
+
+    return this.userService.findAll(query);
+
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  findOne(@Param('id') id: bigint) {
+
+    return this.userService.findById(id);
+
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  update(@Param('id') id: bigint, @Body(new ZodValidationPipe(updateUserValidationSchema)) updateUserDto: UpdateUserDTO) {
+    return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  delete(@Param('id') id: bigint) {
+    const deleted = this.userService.delete(id);
+    return Boolean(deleted);
   }
 }
