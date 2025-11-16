@@ -38,12 +38,16 @@ export class AuthService {
     const {email } = loginInfo;
 
     try {
-      const foundedUser = await this.userService.findByEmailOrThrow(
+      const foundedUser = await this.userService.findByEmail(
         email,
       );
       
+      if(!foundedUser) {
+        throw new UnauthorizedException('Invalid Credentials');
+      }
+      
       if(foundedUser.isDeleted) {
-        throw new UnauthorizedException('User is deleted');
+        throw new UnauthorizedException('Invalid Credentials!');
       }
       
       const isPasswordValid = await this.verifyPassword(

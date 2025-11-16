@@ -1,7 +1,9 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from "@nestjs/common";
 import type { Response, Request } from "express";
-import { buildApiErrorResponse } from "./utils/responseBuilder.util";
+import { buildApiErrorResponse, buildZodValidationErrorResponse } from "./utils/responseBuilder.util";
 import { Prisma } from "generated/prisma";
+import { ZodError } from "zod";
+
 @Catch(HttpException) 
 export class HttpExceptionFilter implements ExceptionFilter {
     catch(exception: HttpException, host: ArgumentsHost) {
@@ -23,6 +25,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 @Catch(
     Prisma.PrismaClientKnownRequestError,
     Prisma.PrismaClientValidationError,
+    Prisma.PrismaClientUnknownRequestError,
 )
 export class PrismaExceptionFilter implements ExceptionFilter {
     catch(exception: Prisma.PrismaClientKnownRequestError | Prisma.PrismaClientValidationError, host: ArgumentsHost) {
@@ -48,17 +51,28 @@ export class PrismaExceptionFilter implements ExceptionFilter {
             switch(exception.code) {
                 case 'P2002': {
                     defaultError.statusCode = HttpStatus.CONFLICT;
-                    if(exception.meta && typeof exception.meta.target === 'string') {
-                        defaultError.message = `Unique constraint failed on this field: ${exception.meta.target}`;
-                        defaultError.fields = [
-                            {
-                                field: exception.meta.target,
-                                message: exception.message,
-                            }
-                        ]
-                        break;
-                    }
+
                     defaultError.message = exception.message;
+
+                    if (exception.meta) {
+                        if (typeof exception.meta.target === 'string') {
+                            defaultError.message = `Unique constraint failed on this field: ${exception.meta.target}`;
+                            defaultError.fields = [
+                                {
+                                    field: exception.meta.target,
+                                    message: exception.message,
+                                },
+                            ];
+                        } else if (Array.isArray(exception.meta.target)) {
+                            const fields = exception.meta.target.join(', ');
+                            defaultError.message = `Unique constraint failed on the fields: ${fields}`;
+                            defaultError.fields = exception.meta.target.map((field) => ({
+                                field: String(field),
+                                message: `Unique constraint failed on: ${String(field)}`,
+                            }));
+                        }
+                    }
+                    
                     break;
                 }
 
@@ -99,4 +113,22 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         }
         return response.status(defaultError.statusCode).json(defaultError);
     }
+}
+
+@Catch(ZodError)
+export class ZodExceptionFilter implements ExceptionFilter {
+  catch(exception: ZodError, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const res = ctx.getResponse<Response>();
+    const req = ctx.getRequest<Request>();
+
+    const status = HttpStatus.BAD_REQUEST;
+    const errorResponse = buildZodValidationErrorResponse(
+        req.url,
+        status,
+        exception.issues,
+    );
+
+    res.status(status).json(errorResponse);
+  }
 }
