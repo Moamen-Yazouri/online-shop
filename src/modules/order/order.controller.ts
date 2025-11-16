@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import type { IPaginationQuery, IPaginationResult } from 'src/@types';
-import type { Request } from 'express';
 import type { CreateOrderDTO, OrderOverviewDTO } from './dto/order.dto';
+import { User } from 'src/decorators/user.dec';
+import type { User as PrismaUser } from 'generated/prisma';
 
 @Controller('order')
 export class OrderController {
@@ -11,18 +12,18 @@ export class OrderController {
 
   @Post()
   create(
-    @Req() req: Request,
+    @User() user: PrismaUser,
     @Body() createOrderDto: CreateOrderDTO
   ) {
-    return this.orderService.create(createOrderDto, BigInt(req.user!.id));
+    return this.orderService.create(createOrderDto, BigInt(user.id));
   }
 
   @Get()
   findAll(
-    @Req() req: Request,
+    @User() user: PrismaUser,
     @Query() query: IPaginationQuery
   ): Promise<IPaginationResult<OrderOverviewDTO>> {
-    return this.orderService.findAll(query, BigInt(req.user!.id));
+    return this.orderService.findAll(query, BigInt(user.id));
   }
 
   @Get(':id')

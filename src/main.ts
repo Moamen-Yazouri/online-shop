@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter, PrismaExceptionFilter } from './errors/exceptions.errors';
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -7,7 +8,15 @@ BigInt.prototype.toJSON = function () {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   app.setGlobalPrefix('api');
+
+  app.useGlobalFilters(
+    new HttpExceptionFilter(),
+    new PrismaExceptionFilter()
+  );
+
   await app.listen(process.env.PORT ?? 3000);
+
 }
 bootstrap();
