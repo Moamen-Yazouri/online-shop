@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile, Req, UseFilters } from '@nestjs/common';
 import type { Request } from 'express'
 import { ProductService } from './product.service';
 import type { CreateProductDTO, ProductResponseDTO, UpdateProductDTO } from './dto/product.dto';
@@ -9,6 +9,7 @@ import { ZodValidationPipe } from 'src/pipes/zodValidation.pipe';
 import { productValidationSchema, updateProductValidationSchema } from './validation/product.validationSchema';
 import { Roles } from 'src/decorators/roles.dec';
 import { productQuerySchema } from './validation/query.validationSchem';
+import { ImageKitExceptionFilter } from 'src/errors/exceptions.errors';
 
 
 @Controller('product')
@@ -21,6 +22,7 @@ export class ProductController {
     FolderInterceptor("products"),
     FileInterceptor('image' ),
   )
+  @UseFilters(ImageKitExceptionFilter)
   create(
     @Req() req: Request,
     @Body(new ZodValidationPipe(productValidationSchema)) createProductDto: CreateProductDTO,
@@ -45,6 +47,7 @@ export class ProductController {
     FolderInterceptor("products"),
     FileInterceptor('image' ),
   )
+  @UseFilters(ImageKitExceptionFilter)
   @Patch(':id')
   update(
     @Param('id') id: bigint,

@@ -3,6 +3,7 @@ import type { Response, Request } from "express";
 import { buildApiErrorResponse, buildZodValidationErrorResponse } from "./utils/responseBuilder.util";
 import { Prisma } from "generated/prisma";
 import { ZodError } from "zod";
+import { APIError } from "@imagekit/nodejs";
 
 @Catch(HttpException) 
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -131,4 +132,57 @@ export class ZodExceptionFilter implements ExceptionFilter {
 
     res.status(status).json(errorResponse);
   }
+}
+
+@Catch()
+export class UncaughtExceptionFilter implements ExceptionFilter {
+    catch(exception: unknown, host: ArgumentsHost) {
+        const ctx = host.switchToHttp();
+
+        const res = ctx.getResponse<Response>();
+
+        const req = ctx.getRequest<Request>();
+
+        const status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+        const message = exception  instanceof Error 
+            ? exception.message
+            : "Internal Server Error, try again later!"
+            
+        const error = buildApiErrorResponse({
+                statusCode: status,
+                path: req.url,
+                message,
+        });
+
+        res.status(status).json(error);
+    }
+}
+
+@Catch(APIError)
+export class ImageKitExceptionFilter implements ExceptionFilter {
+    catch(exception: APIError, host: ArgumentsHost) {
+        const ctx = host.switchToHttp();
+
+        const res = ctx.getResponse<Response>();
+
+        const req = ctx.getRequest<Request>();
+
+        const status = 
+                typeof exception.status === 'number' 
+                && exception.status >= 400 
+                && exception.status < 500 
+                ? exception.status 
+                : HttpStatus.BAD_GATEWAY;
+
+        const message = "We can not handle your image right now, try again later!";
+            
+        const error = buildApiErrorResponse({
+                statusCode: status,
+                path: req.url,
+                message,
+        });
+
+        res.status(status).json(error);
+    }
 }
