@@ -10,6 +10,7 @@ import { productValidationSchema, updateProductValidationSchema } from './valida
 import { Roles } from 'src/decorators/roles.dec';
 import { productQuerySchema } from './validation/query.validationSchem';
 import { ImageKitExceptionFilter } from 'src/errors/exceptions.errors';
+import { FileCleanupInterceptor } from 'src/interceptors/fileCleanup.interceptor';
 
 
 @Controller('product')
@@ -21,6 +22,7 @@ export class ProductController {
   @UseInterceptors(
     FolderInterceptor("products"),
     FileInterceptor('image' ),
+    FileCleanupInterceptor
   )
   @UseFilters(ImageKitExceptionFilter)
   create(
@@ -46,6 +48,7 @@ export class ProductController {
   @UseInterceptors(
     FolderInterceptor("products"),
     FileInterceptor('image' ),
+    FileCleanupInterceptor,
   )
   @UseFilters(ImageKitExceptionFilter)
   @Patch(':id')
