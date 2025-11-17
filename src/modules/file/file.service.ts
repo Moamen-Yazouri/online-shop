@@ -37,8 +37,7 @@ export class FileService {
 
                 console.log("Remove file from imageKit is triggered!");
                 
-                this.imageKit.files
-                .delete(file.fileId)
+                this.deleteFileFromImagekit(file.fileId)
                 .then(() => cb(null))
                 .catch(cb)
             },
@@ -83,5 +82,9 @@ export class FileService {
                 }
             })
         })
+    }
+
+    deleteFileFromImagekit(fileId: string) {
+        return this.imageKit.files.delete(fileId);
     }
 }
