@@ -38,6 +38,12 @@ enum StorageProviderName {
   IMAGE_KIT
 }
 
+
+enum IdempotencyStatus {
+  PENDING
+  SUCCEED
+  FAILED
+}
 model User {
   id        BigInt   @id @default(autoincrement())
   name      String
@@ -160,6 +166,15 @@ model UserTransaction {
   @@index([orderId])
   @@index([orderReturnId])
   @@index([type])
+}
+
+model Idempotency {
+  idempotencykey String @id @map("idempotency_key") @db.VarChar(255)
+  response       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  expiresAt      DateTime @map("expires_at")
+  status         IdempotencyStatus @default(PENDING)
 }
 
 
